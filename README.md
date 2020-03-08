@@ -7,8 +7,8 @@ To assist you in the queries ahead, the schema for the DVD Rental database is pr
 
 ## This repository contains the following files:
  
- * [DVD Rental ER Diagram] (https://github.com/hagar912/DVD-Rental-database-Analysis/blob/master/dvd-rental-erd-2.png) :
-       which describe relationship between every relation .
+ * [DVD Rental ER Diagram](https://github.com/hagar912/DVD-Rental-database-Analysis/blob/master/dvd-rental-erd-2.png) 
+ which describe relationship between every relation .
  
  * [SQL Queries] () :
        That describe the quires used to analysis the database for understanding.
