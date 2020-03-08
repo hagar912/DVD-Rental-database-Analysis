@@ -1,0 +1,76 @@
+/*Query(1) .. What are the most successful categories among the family movies?*/		
+SELECT t1.category_name ,
+	SUM(t1.rental_count)
+FROM (
+SELECT DISTINCT(f.title) as film_title,
+	c.name as category_name,		
+	COUNT(r.rental_date) OVER (PARTITION BY f.title ORDER BY f.title) as rental_count		
+FROM film f
+JOIN film_category fc		
+ON f.film_id = fc.film_id		
+JOIN category c
+ON fc.category_id = c.category_id	
+JOIN inventory i		
+ON f.film_id = i.film_id		
+JOIN rental r	
+ON i.inventory_id = r.inventory_id		
+WHERE c.name in('Animation','Children','Classics','Comedy','Family','Music')	
+ORDER BY 1,2)t1
+GROUP BY 1
+ORDER BY 2 DESC;
+
+/*Query(2) .. who is the best 10 actors favorite by customer (provide customer email)*/
+SELECT t1.email,t1.count ,t1.full_name
+FROM(
+SELECT c.email,
+ 	a.first_name||' ' ||a.last_name as full_name,
+	count(a.first_name||' ' ||a.last_name),
+	row_number() over(partition by email order by COUNT(a.first_name||' ' ||a.last_name) DESC )
+FROM customer as c
+JOIN rental as r
+ON c.customer_id = r.customer_id
+JOIN inventory as i
+ON r.inventory_id = i.inventory_id
+JOIN film_actor as f
+ON i.film_id = f.film_id
+JOIN actor as a
+ON a.actor_id = f.actor_id
+group by 1,2)t1
+where row_number = 1
+ORDER BY 2 DESC
+limit 10;
+
+/*Query(3) .. Find out num of movies that already Sold and others Not Soled?*/
+SELECT DISTINCT(amount_sales_levels),
+          COUNT(title) OVER (PARTITION BY amount_sales_levels) AS sales_Amount_count
+FROM
+	(SELECT f.title as title,
+		p.amount,
+		CASE WHEN p.amount !=0.00 THEN 'Sold'
+		WHEN p.amount = 0.00 THEN 'Not Sold' END AS amount_sales_levels
+	 FROM payment p
+	 JOIN rental r
+	 ON r.rental_id=p.rental_id
+ 	 JOIN inventory i
+	 ON r.inventory_id=i.inventory_id
+	 JOIN film f
+	 ON i.film_id =f.film_id
+	 ORDER BY 2 desc)t1
+ORDER BY amount_sales_levels;
+
+/*Query(4) .. How many rented films were returned late, early and on time?*/
+WITH t1 AS (select *,DATE_PART('day',return_date - rental_date) AS date_diff
+	FROM rental),
+t2 AS (SELECT rental_duration , date_diff,
+		CASE when rental_duration > date_diff THEN 'returned early'
+		WHEN rental_duration = date_diff THEN 'returned on time'
+		ELSE 'returned late' END AS return_status
+	FROM film f
+	JOIN inventory i
+	ON f.film_id = i.film_id
+	JOIN t1
+	ON t1.inventory_id=i.inventory_id)
+SELECT return_status, COUNT(*) as total_num_films
+FROM t2
+GROUP BY 1
+ORDER BY 2 DESC;
