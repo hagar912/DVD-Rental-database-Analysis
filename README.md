@@ -1,5 +1,5 @@
 # DVD-Rental-database-Analysis
-Udacity Project for Intro to Data science
+#### Udacity Project for Intro to Data science
 
 
 A project working with SQL comands for analysis ,you will query the Sakila DVD Rental database. 
